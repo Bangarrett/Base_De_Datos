@@ -7,12 +7,8 @@ Apellidos varchar (100) NOT NULL,
 Nombre varchar (100) NOT NULL,
 Mail varchar (150) NOT NULL,
 Contraseña INT NOT NULL,
-Tipo varchar (50) NOT NULL,
-Curso_ID INT NOT NULL,
-FOREIGN KEY (Curso_ID) REFERENCES Cursos (Curso_ID)
+Tipo varchar (50) NOT NULL
 );
-
-ALTER TABLE Usuarios DROP COLUMN Curso_ID;
 
 CREATE TABLE Cursos (
 Curso_ID INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -44,28 +40,13 @@ FOREIGN KEY (Usuario_ID) REFERENCES Usuarios (Usuario_ID)
 );
 
 CREATE TABLE Procesos (
-Proceso_ID int not null PRIMARY KEY,
+Usuario_ID int not null PRIMARY KEY,
 Curso_ID int not null,
 Leccion_ID int not null,
 Completado_ID varchar (100) not null,
 FOREIGN KEY (Curso_ID) REFERENCES Cursos (Curso_ID),
 FOREIGN KEY (Leccion_ID) REFERENCES Lecciones (Leccion_ID)
 );
-
-ALTER TABLE Procesos RENAME COLUMN Proceso_ID TO Usuario_ID;
-DROP TABLE Procesos;
-
-CREATE TABLE Procesos (
-Usuario_ID int not null,
-Proceso_ID int not null PRIMARY KEY,
-Curso_ID int not null,
-Leccion_ID int not null,
-Completado_ID varchar (100) not null,
-FOREIGN KEY (Curso_ID) REFERENCES Cursos (Curso_ID),
-FOREIGN KEY (Leccion_ID) REFERENCES Lecciones (Leccion_ID),
-FOREIGN KEY (Usuario_ID) REFERENCES Usuarios (Usuario_ID)
-);
-
 
 
 INSERT INTO Usuarios (Usuario_ID, Apellidos, Nombre, Mail, Contraseña, Tipo) VALUES
@@ -99,7 +80,7 @@ INSERT INTO Pagos (Pago_ID, Estado, Vía_Pago, Curso_ID, Usuario_ID) VALUES
 (01, 'No Pagado', 'PayPal', 21, 2),
 (02, 'A Plazos', 'Tarjeta Credito', 22, 3);
 
-INSERT INTO Procesos (Proceso_ID, Curso_ID, Leccion_ID, Completado_ID) VALUES
+INSERT INTO Procesos (Usuario_ID, Curso_ID, Leccion_ID, Completado_ID) VALUES
 (1, 20, 12, 'True'),
 (2, 20, 13, 'False'),
 (3, 21, 12, 'False'),
@@ -107,6 +88,32 @@ INSERT INTO Procesos (Proceso_ID, Curso_ID, Leccion_ID, Completado_ID) VALUES
 (5, 24, 10, 'True');
 
 SELECT * FROM Usuarios;
+
+#--Consulta para obtener información de los usuarios y los cursos a los que están inscritos--
+SELECT Usuarios.Usuario_ID, Usuarios.Nombre, Usuarios.Apellidos, Cursos.Tipo
+FROM Usuarios
+JOIN Cursos ON Usuarios.Usuario_ID = Cursos.Usuario_ID;
+
+#--Consulta para obtener información de los pagos realizados por los usuarios y los cursos asociados--
+SELECT Pagos.Pago_ID, Pagos.Estado, Usuarios.Nombre, Usuarios.Apellidos, Cursos.Tipo
+FROM Pagos
+JOIN Usuarios ON Pagos.Usuario_ID = Usuarios.Usuario_ID
+JOIN Cursos ON Pagos.Curso_ID = Cursos.Curso_ID;
+
+
+#--Consulta para obtener información completa sobre los procesos de aprendizaje de los usuarios, incluyendo detalles sobre los cursos y las lecciones--
+SELECT Procesos.Usuario_ID, Usuarios.Nombre, Usuarios.Apellidos, Cursos.Tipo, Lecciones.Nivel, Lecciones.Etapa
+FROM Procesos
+JOIN Usuarios ON Procesos.Usuario_ID = Usuarios.Usuario_ID
+JOIN Cursos ON Procesos.Curso_ID = Cursos.Curso_ID
+JOIN Lecciones ON Procesos.Leccion_ID = Lecciones.Leccion_ID;
+
+
+#-- información sobre los docentes y las asignaturas que imparten--
+SELECT Usuarios.Nombre AS Docente, Usuarios.Apellidos, Cursos.Tipo AS Asignatura
+FROM Usuarios
+JOIN Cursos ON Usuarios.Usuario_ID = Cursos.Usuario_ID
+WHERE Usuarios.Tipo = 'Docente';
 
 
 
